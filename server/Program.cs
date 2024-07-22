@@ -1,6 +1,7 @@
 ﻿using ClerkDemo.ConfigurationModels;
 using ClerkDemo.Database;
 using ClerkDemo.Extensions;
+using ClerkDemo.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,6 +31,8 @@ builder.Services.AddCors(opt =>
 builder.Services.AddSwaggerGen();
 
 builder.Services.Configure<ClerkOptions>(builder.Configuration.GetSection(ClerkOptions.Clerk));
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<SessionService>();
 
 var app = builder.Build();
 

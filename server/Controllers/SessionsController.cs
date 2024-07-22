@@ -1,16 +1,19 @@
+using ClerkDemo.Controllers.DTOs;
 using ClerkDemo.Services;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
-namespace ClerkDemo.Controllers
+namespace ClerkDemo.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class SessionsController(SessionService sessionService, ILogger<UsersController> logger) : BaseController(logger)
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class SessionsController(SessionService sessionService) : ControllerBase
+    [HttpPost]
+    public async Task HandleWebhookEvents([FromBody] object body)
     {
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            return Ok();
-        }
+        ValidateWebhook(body);
+        ClerkEvent clerkEvent = JsonConvert.DeserializeObject<ClerkEvent>(body.ToString()!)!;
+        await sessionService.HandleEvent(clerkEvent);
     }
 }
