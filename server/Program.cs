@@ -1,4 +1,5 @@
-﻿using ClerkDemo.ConfigurationModels;
+﻿using Clerk.Net.DependencyInjection;
+using ClerkDemo.ConfigurationModels;
 using ClerkDemo.Database;
 using ClerkDemo.Extensions;
 using ClerkDemo.Services;
@@ -17,6 +18,11 @@ builder.Services.AddJwt(builder.Configuration);
 
 builder.Services.AddEndpointsApiExplorer();
 
+builder.Services.AddClerkApiClient(config =>
+{
+    config.SecretKey = builder.Configuration["Clerk:SecretKey"]!;
+});
+
 WebAPIOptions webApiConfiguration = builder.Configuration.GetOptions<WebAPIOptions>("WebAPI");
 builder.Services.AddCors(opt =>
     opt.AddDefaultPolicy(p =>
@@ -33,6 +39,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.Configure<ClerkOptions>(builder.Configuration.GetSection(ClerkOptions.Clerk));
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<SessionService>();
+builder.Services.AddScoped<ClerkService>();
 
 var app = builder.Build();
 

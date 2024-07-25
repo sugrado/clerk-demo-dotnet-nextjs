@@ -24,4 +24,18 @@ public class UsersController(UserService userService, ILogger<UsersController> l
     {
         return Ok(new { Name = "Ali", Age = 23 });
     }
+
+    [HttpGet]
+    [Authorize]
+    public async Task<IActionResult> Get()
+    {
+        return Ok(await userService.GetUsers());
+    }
+
+    [HttpGet("{id}")]
+    [Authorize]
+    public async Task<IActionResult> Get([FromRoute] string id)
+    {
+        return Ok(await userService.GetUserById(id));
+    }
 }

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ClerkDemo.Services;
 
-public class UserService(BaseDbContext context)
+public class UserService(BaseDbContext context, ClerkService clerkService)
 {
     public async Task HandleEvent(ClerkEvent clerkEvent)
     {
@@ -56,5 +56,41 @@ public class UserService(BaseDbContext context)
             });
             await context.SaveChangesAsync();
         }
+    }
+
+    public async Task<List<User>> GetUsers()
+    {
+        List<Clerk.Net.Client.Models.User> clerkUsers = await clerkService.GetList();
+        return clerkUsers
+            .Select(p => new User
+            {
+                ClerkId = p.Id!,
+                Email = p.EmailAddresses!.FirstOrDefault()!.EmailAddressProp!
+            })
+            .ToList();
+    }
+
+    public async Task<List<User>> GetUsersByIds(string[] ids)
+    {
+        List<Clerk.Net.Client.Models.User> clerkUsers = await clerkService.GetList(ids);
+        return clerkUsers
+            .Select(p => new User
+            {
+                ClerkId = p.Id!,
+                Email = p.EmailAddresses!.FirstOrDefault()!.EmailAddressProp!
+            })
+            .ToList();
+    }
+
+    public async Task<User?> GetUserById(string id)
+    {
+        Clerk.Net.Client.Models.User? clerkUser = await clerkService.Get(id);
+        if (clerkUser is null)
+            return null;
+        return new User
+        {
+            ClerkId = clerkUser.Id!,
+            Email = clerkUser.EmailAddresses!.FirstOrDefault()!.EmailAddressProp!
+        };
     }
 }
