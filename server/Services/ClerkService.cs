@@ -27,7 +27,7 @@ public class ClerkService(ClerkApiClient clerkApiClient)
     {
         Action<RequestConfiguration<UsersRequestBuilderGetQueryParameters>> action = new(p =>
         {
-           p.QueryParameters.UserId = [id];
+            p.QueryParameters.UserId = [id];
         });
         List<User>? users = await clerkApiClient.Users.GetAsync(action);
         return users?.FirstOrDefault();
