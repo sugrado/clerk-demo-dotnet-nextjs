@@ -1,3 +1,4 @@
+import { useAuth } from "@clerk/nextjs";
 import axios from "axios";
 
 const axiosInstance = axios.create({
@@ -8,9 +9,12 @@ const axiosInstance = axios.create({
   },
 });
 
-export const handleSendRequest = async () => {
-  const response = await axiosInstance.get("/api/users/me");
-
+export const handleSendRequest = async (token: string | null) => {
+  const response = await axiosInstance.get("/api/users/me", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   if (response.status === 200) {
     alert("Request sent!");
   } else {

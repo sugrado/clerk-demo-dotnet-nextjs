@@ -1,16 +1,23 @@
 "use client";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  useAuth,
+  UserButton,
+} from "@clerk/nextjs";
 import Dashboard from "./dashboard/page";
 import { handleSendRequest } from "./utils/sampleRequest";
 
 export default function Home() {
-  const handleButton = async () => {
-    await handleSendRequest();
-  };
+  const { getToken } = useAuth();
+
   return (
     <div>
       <SignedOut>
-        <button onClick={handleButton}>Send a request!</button>
+        <button onClick={async () => handleSendRequest(await getToken())}>
+          Send a request!
+        </button>
         <SignInButton />
       </SignedOut>
       <SignedIn>
