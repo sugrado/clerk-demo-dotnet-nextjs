@@ -1,11 +1,12 @@
 ﻿using ClerkDemo.Controllers.DTOs;
 using ClerkDemo.Database;
+using ClerkDemo.Database.MongoDB;
 using ClerkDemo.Entities;
-using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace ClerkDemo.Services;
 
-public class UserService(BaseDbContext context, ClerkService clerkService)
+public class UserService(UserRepository userRepository, ClerkService clerkService)
 {
     public async Task HandleEvent(ClerkEvent clerkEvent)
     {
@@ -25,72 +26,95 @@ public class UserService(BaseDbContext context, ClerkService clerkService)
 
     private async Task HandleDeletedEvent(ClerkEventData data)
     {
-        User? user = await context.Users.FirstOrDefaultAsync(p => p.ClerkId.Equals(data.Id) && !p.DeletedAt.HasValue);
+        User? user = await userRepository.GetAsync(p => p.ClerkId.Equals(data.Id) && !p.DeletedAt.HasValue);
         if (user is not null)
         {
-            user.DeletedAt = DateTime.UtcNow;
-            await context.SaveChangesAsync();
+            await userRepository.DeleteAsync(user.Id);
         }
     }
 
     private async Task HandleUpdatedEvent(ClerkEventData data)
     {
-        User? user = await context.Users.FirstOrDefaultAsync(p => p.ClerkId.Equals(data.Id) && !p.DeletedAt.HasValue);
+        User? user = await userRepository.GetAsync(p => p.ClerkId.Equals(data.Id) && !p.DeletedAt.HasValue);
         if (user is not null)
         {
+            Dictionary<Expression<Func<User, object>>, object> updates = [];
+
             if (user.Email != data.EmailAddresses![0].Email)
-                user.Email = data.EmailAddresses![0].Email;
-            await context.SaveChangesAsync();
+                updates.Add(u => u.Email, data.EmailAddresses![0].Email);
+
+            if (updates.Count > 0)
+                await userRepository.UpdateAsync(x => x.Id == user.Id, updates);
         }
     }
 
     private async Task HandleCreatedEvent(ClerkEventData data)
     {
-        User? user = await context.Users.FirstOrDefaultAsync(p => p.ClerkId.Equals(data.Id) && !p.DeletedAt.HasValue);
+        User? user = await userRepository.GetAsync(p => p.ClerkId.Equals(data.Id) && !p.DeletedAt.HasValue);
+
         if (user is null)
         {
-            context.Users.Add(new User
+            await userRepository.AddAsync(new User
             {
                 ClerkId = data.Id,
                 Email = data.EmailAddresses![0].Email
             });
-            await context.SaveChangesAsync();
         }
     }
 
     public async Task<List<User>> GetUsers()
     {
-        List<Clerk.Net.Client.Models.User> clerkUsers = await clerkService.GetList();
-        return clerkUsers
-            .Select(p => new User
-            {
-                ClerkId = p.Id!,
-                Email = p.EmailAddresses!.FirstOrDefault()!.EmailAddressProp!
-            })
-            .ToList();
+        return await userRepository.GetListAsync(p => !p.DeletedAt.HasValue);
     }
 
     public async Task<List<User>> GetUsersByIds(string[] ids)
     {
-        List<Clerk.Net.Client.Models.User> clerkUsers = await clerkService.GetList(ids);
-        return clerkUsers
-            .Select(p => new User
-            {
-                ClerkId = p.Id!,
-                Email = p.EmailAddresses!.FirstOrDefault()!.EmailAddressProp!
-            })
-            .ToList();
+        return await userRepository.GetListAsync(p => ids.Contains(p.ClerkId) && !p.DeletedAt.HasValue);
     }
 
     public async Task<User?> GetUserById(string id)
     {
-        Clerk.Net.Client.Models.User? clerkUser = await clerkService.Get(id);
-        if (clerkUser is null)
-            return null;
-        return new User
+        return await userRepository.GetAsync(p => p.ClerkId.Equals(id) && !p.DeletedAt.HasValue);
+    }
+
+    public async Task SyncUsersWithClerk()
+    {
+        List<Clerk.Net.Client.Models.User> clerkUsers = await clerkService.GetList();
+        List<User> users = await GetUsers();
+
+        foreach (Clerk.Net.Client.Models.User clerkUser in clerkUsers)
         {
-            ClerkId = clerkUser.Id!,
-            Email = clerkUser.EmailAddresses!.FirstOrDefault()!.EmailAddressProp!
-        };
+            User? user = users.FirstOrDefault(p => p.ClerkId.Equals(clerkUser.Id));
+            if (user is not null)
+            {
+                Dictionary<Expression<Func<User, object>>, object> updates = [];
+
+                if (user.Email != clerkUser.EmailAddresses![0].EmailAddressProp)
+                    updates.Add(u => u.Email, clerkUser.EmailAddresses![0].EmailAddressProp!);
+
+                if (updates.Count > 0)
+                    await userRepository.UpdateAsync(x => x.Id == user.Id, updates);
+            }
+            else
+            {
+                await userRepository.AddAsync(new User
+                {
+                    ClerkId = clerkUser.Id!,
+                    Email = clerkUser.EmailAddresses![0].EmailAddressProp!
+                });
+            }
+        }
+
+        foreach (User user in users)
+        {
+            Clerk.Net.Client.Models.User? clerkUser = clerkUsers.FirstOrDefault(p => p.Id!.Equals(user.ClerkId));
+            if (clerkUser is null)
+            {
+                await userRepository.UpdateAsync(x => x.Id == user.Id, new()
+                {
+                    { u => u.DeletedAt!, DateTime.UtcNow }
+                });
+            }
+        }
     }
 }
