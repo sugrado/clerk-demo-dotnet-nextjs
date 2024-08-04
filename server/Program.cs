@@ -1,6 +1,7 @@
 ﻿using Clerk.Net.DependencyInjection;
 using ClerkDemo.ConfigurationModels;
 using ClerkDemo.Database;
+using ClerkDemo.Database.MongoDB;
 using ClerkDemo.Extensions;
 using ClerkDemo.Services;
 
@@ -34,6 +35,9 @@ builder.Services.AddCors(opt =>
 builder.Services.AddSwaggerGen();
 
 builder.Services.Configure<ClerkOptions>(builder.Configuration.GetSection(ClerkOptions.Clerk));
+builder.Services.Configure<MongoConnectionSettings>(builder.Configuration.GetSection(MongoConnectionSettings.MongoSettings));
+builder.Services.AddScoped<UserRepository>();
+builder.Services.AddScoped<SessionRepository>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<SessionService>();
 builder.Services.AddScoped<ClerkService>();
