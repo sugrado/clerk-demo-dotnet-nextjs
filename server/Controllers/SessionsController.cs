@@ -1,3 +1,4 @@
+using ClerkDemo.Controllers.Aspects;
 using ClerkDemo.Controllers.DTOs;
 using ClerkDemo.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -9,10 +10,9 @@ namespace ClerkDemo.Controllers;
 [Route("api/[controller]")]
 public class SessionsController(SessionService sessionService, ILogger<UsersController> logger) : BaseController(logger)
 {
-    [HttpPost]
+    [HttpPost, ValidateWebHook]
     public async Task HandleWebhookEvents([FromBody] object body)
     {
-        ValidateWebhook(body);
         ClerkEvent clerkEvent = JsonConvert.DeserializeObject<ClerkEvent>(body.ToString()!)!;
         await sessionService.HandleEvent(clerkEvent);
     }

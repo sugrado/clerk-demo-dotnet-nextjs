@@ -1,3 +1,4 @@
+using ClerkDemo.Controllers.Aspects;
 using ClerkDemo.Controllers.DTOs;
 using ClerkDemo.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -10,10 +11,9 @@ namespace ClerkDemo.Controllers;
 [Route("api/[controller]")]
 public class UsersController(UserService userService, ILogger<UsersController> logger) : BaseController(logger)
 {
-    [HttpPost]
+    [HttpPost, ValidateWebHook]
     public async Task HandleWebhookEvents([FromBody] object body)
     {
-        ValidateWebhook(body);
         ClerkEvent clerkEvent = JsonConvert.DeserializeObject<ClerkEvent>(body.ToString()!)!;
         await userService.HandleEvent(clerkEvent);
     }
