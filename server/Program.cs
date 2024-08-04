@@ -3,14 +3,11 @@ using ClerkDemo.ConfigurationModels;
 using ClerkDemo.Database;
 using ClerkDemo.Extensions;
 using ClerkDemo.Services;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-
-builder.Services.AddDbContext<BaseDbContext>(opt => opt.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSQL")));
 
 ConfigHelper.Initialize(builder.Configuration);
 
