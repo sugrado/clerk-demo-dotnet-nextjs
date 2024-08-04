@@ -1,6 +1,5 @@
 ﻿using ClerkDemo.Controllers.DTOs;
 using ClerkDemo.Database;
-using ClerkDemo.Database.MongoDB;
 using ClerkDemo.Entities;
 using System.Linq.Expressions;
 

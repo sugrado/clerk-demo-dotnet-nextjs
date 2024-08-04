@@ -1,4 +1,5 @@
-﻿using ClerkDemo.Entities;
+﻿using ClerkDemo.ConfigurationModels;
+using ClerkDemo.Entities;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;

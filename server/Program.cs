@@ -1,7 +1,6 @@
 ﻿using Clerk.Net.DependencyInjection;
 using ClerkDemo.ConfigurationModels;
 using ClerkDemo.Database;
-using ClerkDemo.Database.MongoDB;
 using ClerkDemo.Extensions;
 using ClerkDemo.Services;
 

@@ -1,6 +1,4 @@
-﻿using MongoDB.Driver;
-
-namespace ClerkDemo.Database.MongoDB;
+﻿namespace ClerkDemo.ConfigurationModels;
 public class MongoConnectionSettings
 {
     public const string MongoSettings = "MongoSettings";
