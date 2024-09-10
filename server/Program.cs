@@ -1,15 +1,26 @@
 ﻿using Clerk.Net.DependencyInjection;
-using ClerkDemo.ConfigurationModels;
 using ClerkDemo.Database;
+using ClerkDemo.Database.EntityFramework;
 using ClerkDemo.Extensions;
+using ClerkDemo.Models;
 using ClerkDemo.Services;
+using ClerkDemo.Services.Clerk;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 
-ConfigHelper.Initialize(builder.Configuration);
+builder.Services.AddDbContext<BaseDbContext>(options =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("Postgres"));
+});
+
+builder.Services.Configure<ClerkOptions>(builder.Configuration.GetSection(ClerkOptions.Clerk));
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ClerkService>();
 
 builder.Services.AddJwt(builder.Configuration);
 
@@ -32,14 +43,6 @@ builder.Services.AddCors(opt =>
 );
 
 builder.Services.AddSwaggerGen();
-
-builder.Services.Configure<ClerkOptions>(builder.Configuration.GetSection(ClerkOptions.Clerk));
-builder.Services.Configure<MongoConnectionSettings>(builder.Configuration.GetSection(MongoConnectionSettings.MongoSettings));
-builder.Services.AddScoped<UserRepository>();
-builder.Services.AddScoped<SessionRepository>();
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<SessionService>();
-builder.Services.AddScoped<ClerkService>();
 
 var app = builder.Build();
 

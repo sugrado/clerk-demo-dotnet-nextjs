@@ -1,12 +1,19 @@
-﻿using MongoDB.Bson;
+﻿namespace ClerkDemo.Entities;
 
-namespace ClerkDemo.Entities;
-
-public class Entity
+public class Entity<TId>
 {
-    public ObjectId Id { get; set; }
-    public string ObjectId => Id.ToString();
+    public TId Id { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
+
+    public Entity()
+    {
+        Id = default!;
+    }
+
+    public Entity(TId id)
+    {
+        Id = id;
+    }
 }

@@ -1,4 +1,4 @@
-﻿namespace ClerkDemo.ConfigurationModels;
+﻿namespace ClerkDemo.Models;
 
 public class WebAPIOptions
 {

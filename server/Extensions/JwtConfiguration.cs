@@ -1,4 +1,4 @@
-﻿using ClerkDemo.ConfigurationModels;
+﻿using ClerkDemo.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -8,7 +8,8 @@ public static class JwtConfiguration
 {
     public static void AddJwt(this IServiceCollection services, IConfiguration configuration)
     {
-        TokenOptions tokenOptions = configuration.GetOptions<TokenOptions>("Token");
+        TokenOptions tokenOptions = configuration.GetOptions<TokenOptions>(TokenOptions.Token);
+        ClerkOptions clerkOptions = configuration.GetOptions<ClerkOptions>(ClerkOptions.Clerk);
         services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -21,7 +22,12 @@ public static class JwtConfiguration
                 ValidateAudience = true,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKeyResolver = TokenHelper.SigningKeyResolver,
+                IssuerSigningKeyResolver = (_, _, _, _) =>
+                {
+                    HttpClient httpClient = new();
+                    string keySet = httpClient.GetStringAsync(clerkOptions.JWKSUrl).Result;
+                    return new JsonWebKeySet(keySet).GetSigningKeys();
+                },
                 ValidIssuer = tokenOptions.Issuer,
                 ValidAudience = tokenOptions.Audience,
                 ClockSkew = TimeSpan.Zero

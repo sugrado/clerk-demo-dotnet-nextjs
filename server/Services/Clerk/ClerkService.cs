@@ -3,7 +3,7 @@ using Clerk.Net.Client.Models;
 using Microsoft.Kiota.Abstractions;
 using static Clerk.Net.Client.Users.UsersRequestBuilder;
 
-namespace ClerkDemo.Services;
+namespace ClerkDemo.Services.Clerk;
 
 public class ClerkService(ClerkApiClient clerkApiClient)
 {
