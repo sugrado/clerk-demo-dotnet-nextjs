@@ -26,7 +26,7 @@ public class UserService(IUserRepository userRepository, ClerkService clerkServi
 
     private async Task HandleDeletedEvent(UserEventData data)
     {
-        User? user = await userRepository.GetAsync(p => p.ClerkId.Equals(data.Id) && !p.DeletedAt.HasValue);
+        User? user = await userRepository.GetAsync(p => p.ClerkId.Equals(data.Id));
         if (user is not null)
         {
             await userRepository.DeleteAsync(user);
@@ -35,7 +35,7 @@ public class UserService(IUserRepository userRepository, ClerkService clerkServi
 
     private async Task HandleUpdatedEvent(UserEventData data)
     {
-        User? user = await userRepository.GetAsync(p => p.ClerkId.Equals(data.Id) && !p.DeletedAt.HasValue);
+        User? user = await userRepository.GetAsync(p => p.ClerkId.Equals(data.Id));
         if (user is not null)
         {
             List<Expression<Func<User, object>>> updatedProperties = [];
@@ -66,7 +66,7 @@ public class UserService(IUserRepository userRepository, ClerkService clerkServi
 
     private async Task HandleCreatedEvent(UserEventData data)
     {
-        User? user = await userRepository.GetAsync(p => p.ClerkId.Equals(data.Id) && !p.DeletedAt.HasValue);
+        User? user = await userRepository.GetAsync(p => p.ClerkId.Equals(data.Id));
 
         if (user is null)
         {
@@ -82,17 +82,17 @@ public class UserService(IUserRepository userRepository, ClerkService clerkServi
 
     public async Task<IEnumerable<User>> GetUsers()
     {
-        return await userRepository.GetListAsync(p => !p.DeletedAt.HasValue);
+        return await userRepository.GetListAsync();
     }
 
     public async Task<IEnumerable<User>> GetUsersByIds(string[] ids)
     {
-        return await userRepository.GetListAsync(p => ids.Contains(p.ClerkId) && !p.DeletedAt.HasValue);
+        return await userRepository.GetListAsync(p => ids.Contains(p.ClerkId));
     }
 
     public async Task<User?> GetUserById(string id)
     {
-        return await userRepository.GetAsync(p => p.ClerkId.Equals(id) && !p.DeletedAt.HasValue);
+        return await userRepository.GetAsync(p => p.ClerkId.Equals(id));
     }
 
     public async Task SyncWithClerk()
